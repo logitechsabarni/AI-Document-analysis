@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Context-Aware AI Assistant</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // Configure Tailwind to use JIT mode for faster compilation
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#4285F4', // Google Blue
+              secondary: '#EA4335', // Google Red
+              accent: '#34A853', // Google Green
+              warning: '#FBBC04', // Google Yellow
+              'dark-blue-800': '#1A202C',
+              'dark-blue-900': '#111827',
+              'gray-850': '#1f2937',
+            }
+          }
+        }
+      }
+    </script>
+<script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3"
+  }
+}
+</script>
+</head>
+<body class="bg-gray-100 dark:bg-dark-blue-900 text-gray-900 dark:text-gray-100 h-screen overflow-hidden">
+    <div id="root" class="h-full"></div>
+    <script type="module" src="/index.tsx"></script>
+</body>
+</html>
