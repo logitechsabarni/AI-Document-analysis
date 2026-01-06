@@ -34,6 +34,7 @@ const apiRequest = async (endpoint: string, method: string, body?: any): Promise
 
 /**
  * Makes a real API call to the backend /api/chat endpoint to get a Gemini response.
+ * @param userId The ID of the current user. (Added)
  * @param conversationId The ID of the current conversation.
  * @param message The user's message.
  * @param existingMessages All messages in the current conversation for context.
@@ -41,12 +42,14 @@ const apiRequest = async (endpoint: string, method: string, body?: any): Promise
  * @returns A ChatResponse from the backend.
  */
 export const fetchChatResponse = async (
+  userId: string, // Added userId
   conversationId: string,
   message: string,
   existingMessages: Message[],
   activeGoal?: Goal,
 ): Promise<ChatResponse> => {
   return apiRequest('/chat/', 'POST', {
+    userId, // Pass userId in body
     conversationId,
     userMessage: message,
     existingMessages,
@@ -94,10 +97,14 @@ export const updateConversationTitleApi = async (conversationId: string, newTitl
 
 /**
  * Updates an existing goal.
- * @param updatedGoal The goal object with updated properties.
+ * @param goal The goal object with updated properties.
  */
 export const updateGoalApi = async (goal: Goal): Promise<Goal> => {
   // Assuming the backend endpoint for goals takes the full goal object for update/create
-  const response = await apiRequest('/context/', 'POST', goal); // Using POST for general goal update/create
+  // And it needs userId passed in the body
+  const response = await apiRequest('/context/', 'POST', {
+    userId: goal.userId, // Pass userId from the goal object
+    goal: goal // Pass the full goal object
+  }); 
   return response.goal; // Backend returns { "goal": {...} }
 };

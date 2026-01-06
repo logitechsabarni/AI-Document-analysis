@@ -71,6 +71,7 @@ export interface HistoryResponse {
 
 export interface ContextResponse {
   activeGoal?: Goal;
+  goal?: Goal; // Added: Backend POST /context returns 'goal'
 }
 
 // Global context for authentication and app state

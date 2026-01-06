@@ -104,8 +104,8 @@ const App: React.FC = () => {
 
   const updateGoal = useCallback((goal: Goal) => {
     setActiveGoal(goal);
-    // Optionally call backend to persist
-    updateGoalApi(goal).catch(console.error);
+    // Call backend to persist
+    updateGoalApi(goal).catch(console.error); // Pass the entire goal object
   }, []);
 
   const simulateChatResponse = useCallback(
@@ -125,6 +125,7 @@ const App: React.FC = () => {
 
       try {
         const response = await fetchChatResponse(
+          user.id, // Pass userId
           conversationId,
           userMessage,
           activeConversation?.messages || [],
@@ -167,6 +168,8 @@ const App: React.FC = () => {
         const newConv = await createNewConversation(user.id, initialMessage);
         setConversations((prev) => [...prev, newConv]);
         setActiveConversation(newConv);
+        // If there was no initial message, the backend will provide a welcome message.
+        // If there was an initial message, simulateChatResponse will send it and add AI's response.
         if (initialMessage) {
           await simulateChatResponse(newConv.id, initialMessage, true);
         }
