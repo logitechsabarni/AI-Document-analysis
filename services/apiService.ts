@@ -1,10 +1,10 @@
 import { ChatResponse, ContextResponse, Conversation, Goal, HistoryResponse, Message, MessageRole, GoalStatus } from '../types';
-// Import MOCK_USER_ID from constants.ts where it is defined
 import { MOCK_USER_ID } from '../constants';
 
 // Utility function to simulate network delay
 const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
+// --- MOCK DATA (will be replaced by backend calls eventually) ---
 const mockConversations: Conversation[] = [
   {
     id: 'conv-1',
@@ -105,14 +105,16 @@ const mockActiveGoal: Goal = {
   createdAt: new Date(Date.now() - 14 * 24 * 3600000).toISOString(),
   updatedAt: new Date(Date.now() - 1 * 24 * 3600000).toISOString(),
 };
+// --- END MOCK DATA ---
+
 
 /**
- * Mocks a chat API call.
+ * Makes a real API call to the backend /api/chat endpoint to get a Gemini response.
  * @param conversationId The ID of the current conversation.
  * @param message The user's message.
  * @param existingMessages All messages in the current conversation for context.
  * @param activeGoal The user's active goal for context.
- * @returns A mocked ChatResponse.
+ * @returns A ChatResponse from the backend.
  */
 export const fetchChatResponse = async (
   conversationId: string,
@@ -120,49 +122,26 @@ export const fetchChatResponse = async (
   existingMessages: Message[],
   activeGoal?: Goal,
 ): Promise<ChatResponse> => {
-  await delay(1000 + Math.random() * 1000); // Simulate network latency
+  // Use a relative path now that the Node.js server is serving the frontend
+  const response = await fetch('/api/chat', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      conversationId,
+      userMessage: message,
+      existingMessages,
+      activeGoal,
+    }),
+  });
 
-  const newAssistantMessage: Message = {
-    id: `msg-${conversationId}-${Date.now()}`,
-    conversationId: conversationId,
-    role: MessageRole.ASSISTANT,
-    content: 'Default AI response.',
-    timestamp: new Date().toISOString(),
-  };
-
-  let assistantContent = `I received your message: "${message}".`;
-  let updatedGoal: Goal | undefined = undefined;
-
-  // Simulate intent detection and context-aware responses
-  if (message.toLowerCase().includes('roadmap')) {
-    assistantContent = 'Generating a comprehensive roadmap for you... Please specify the topic you want a roadmap for. For example: "Generate a roadmap for learning full-stack web development."';
-  } else if (message.toLowerCase().includes('explain')) {
-    assistantContent = 'Please tell me which concept you\'d like me to explain. For example: "Explain the concept of React Hooks."';
-  } else if (message.toLowerCase().includes('interview prep')) {
-    assistantContent = 'I can help you prepare for an interview. What role are you targeting, and what areas do you want to focus on?';
-  } else if (message.toLowerCase().includes('react hooks') && activeGoal?.title.includes('React')) {
-    assistantContent = 'React Hooks are functions that let you "hook into" React state and lifecycle features from function components. They allow you to use state and other React features without writing a class. The most common ones are `useState` for state management and `useEffect` for side effects. Did you want to know more about a specific hook?';
-  } else if (message.toLowerCase().includes('how is my progress') && activeGoal) {
-    assistantContent = `Based on your goal "${activeGoal.title}", your current progress is: ${activeGoal.progressSummary || 'No summary available.'} You have ${activeGoal.tasks?.filter(t => t.status === GoalStatus.IN_PROGRESS).length} tasks in progress and ${activeGoal.tasks?.filter(t => t.status === GoalStatus.COMPLETED).length} completed tasks.`;
-  } else if (message.toLowerCase().includes('update my progress') && activeGoal) {
-    assistantContent = `Sure, what would you like to update about your progress for "${activeGoal.title}"? For example, "I just completed the 'Build a simple component' task."`;
-    // Simulate updating a goal
-    updatedGoal = {
-      ...activeGoal,
-      progressSummary: `Updated on ${new Date().toLocaleDateString()}. ${message}`,
-      updatedAt: new Date().toISOString(),
-    };
-  } else if (message.toLowerCase().includes('create a new goal')) {
-    assistantContent = 'I can help you set up a new goal. What is the title and description for your new goal?';
-  } else {
-    assistantContent = `Hello! I'm your context-aware AI assistant. How can I help you today?
-    ${activeGoal ? `Your current active goal is "${activeGoal.title}".` : 'You don\'t have an active goal right now.'}
-    Let me know if you want to update your goal, generate a roadmap, or explain a concept!`;
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Failed to fetch AI response from backend.');
   }
 
-  newAssistantMessage.content = assistantContent;
-
-  return { message: newAssistantMessage, contextUpdate: updatedGoal };
+  return response.json();
 };
 
 /**
