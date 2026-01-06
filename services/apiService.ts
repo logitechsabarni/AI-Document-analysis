@@ -24,7 +24,13 @@ const apiRequest = async (endpoint: string, method: string, body?: any): Promise
   const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
 
   if (!response.ok) {
-    const errorData = await response.json();
+    let errorData = { error: `API request failed for ${endpoint}: ${response.statusText}` };
+    try {
+      errorData = await response.json();
+    } catch (e) {
+      // If response is not JSON, use default error message
+      console.error('Failed to parse error response:', e);
+    }
     throw new Error(errorData.error || `API request failed for ${endpoint}: ${response.statusText}`);
   }
 
@@ -92,6 +98,8 @@ export const createNewConversation = async (userId: string, initialMessage: stri
  * @param newTitle The new title for the conversation.
  */
 export const updateConversationTitleApi = async (conversationId: string, newTitle: string): Promise<void> => {
+  // Note: Backend currently doesn't use userId for title update,
+  // but a real app should pass it for authorization.
   await apiRequest(`/history/conversations/${conversationId}/title`, 'PUT', { newTitle });
 };
 
@@ -100,7 +108,7 @@ export const updateConversationTitleApi = async (conversationId: string, newTitl
  * @param goal The goal object with updated properties.
  */
 export const updateGoalApi = async (goal: Goal): Promise<Goal> => {
-  // Assuming the backend endpoint for goals takes the full goal object for update/create
+  // The backend endpoint for goals takes the full goal object for update/create
   // And it needs userId passed in the body
   const response = await apiRequest('/context/', 'POST', {
     userId: goal.userId, // Pass userId from the goal object

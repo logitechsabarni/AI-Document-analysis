@@ -95,7 +95,9 @@ export interface AppContextType {
   updateGoal: (goal: Goal) => void;
   handleNewConversation: (initialMessage: string) => Promise<void>;
   simulateChatResponse: (
+    userId: string, // Corrected parameter order
     conversationId: string,
+    existingMessages: Message[], // Corrected parameter order
     userMessage: string,
     isInitial?: boolean,
   ) => Promise<void>;

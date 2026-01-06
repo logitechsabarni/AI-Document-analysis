@@ -127,8 +127,8 @@ const App: React.FC = () => {
         const response = await fetchChatResponse(
           user.id, // Pass userId
           conversationId,
-          userMessage,
-          activeConversation?.messages || [],
+          userMessage, // User's message is now third parameter
+          activeConversation?.messages || [], // Pass existing messages as fourth parameter
           activeGoal || undefined
         );
 
